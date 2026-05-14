@@ -28,6 +28,7 @@ replay_pid*
 
 # IntelliJ IDEA
 /.idea/
+/.run/
 
 # Gradle
 /.gradle/
@@ -35,6 +36,7 @@ replay_pid*
 
 # Local docs
 /.local/
+/.kotlin/
 
 # JReleaser
 /out/jreleaser/
