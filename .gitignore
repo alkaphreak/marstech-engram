@@ -30,5 +30,11 @@ replay_pid*
 /.idea/
 
 # Gradle
-.gradle/
-build/
+/.gradle/
+/build/
+
+# Local docs
+/.local/
+
+# JReleaser
+/out/jreleaser/
