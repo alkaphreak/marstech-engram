@@ -1,0 +1,45 @@
+project:
+  name: marstech-engram
+  description: Persistent memory MCP server for AI coding assistants
+  longDescription: |
+    MarsTech-Engram is an open-source MCP (Model Context Protocol) server written in Kotlin/JVM.
+    It provides a persistent, local memory layer (SQLite) for AI coding assistants.
+    Any tool supporting MCP stdio transport (Copilot, Kiro, Cursor, Claude Desktop) can connect via a single fat JAR.
+  authors:
+    - Alkaphreak
+  license: Apache-2.0
+  copyright: "2026 Stephane Robin (Alkaphreak)"
+  links:
+    homepage: https://github.com/alkaphreak/marstech-engram
+  languages:
+    java:
+      version: 21
+      groupId: io.marstech.engram
+      artifactId: marstech-engram
+
+release:
+  github:
+    owner: alkaphreak
+    name: marstech-engram
+    tagName: "v{{projectVersion}}"
+    releaseName: "MarsTech-Engram v{{projectVersion}}"
+    overwrite: false
+    draft: false
+    changelog:
+      formatted: ALWAYS
+      preset: conventional-commits
+      contributors:
+        enabled: false
+      hide:
+        categories:
+          - "merge"
+
+distributions:
+  marstech-engram:
+    type: JAVA_BINARY
+    java:
+      groupId: io.marstech.engram
+      artifactId: marstech-engram
+    artifacts:
+      - path: "build/libs/marstech-engram-{{projectVersion}}.jar"
+        transform: "marstech-engram-{{projectVersion}}.jar"
