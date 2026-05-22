@@ -34,6 +34,12 @@ release:
         categories:
           - "merge"
 
+signing:
+  active: NEVER
+
+checksum:
+  individual: true
+
 distributions:
   marstech-engram:
     type: JAVA_BINARY
