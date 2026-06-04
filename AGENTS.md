@@ -1,4 +1,30 @@
-# AGENTS.md
+# AGENTS.md — marstech-engram
+
+> Kotlin/JVM MCP server — exposes persistent memory tools over stdio for AI clients.
+> Maintainer: Alkaphreak (Stephane Robin). YouTrack project: **MARSTECH**.
+
+---
+
+## Stack
+
+- **Language**: Kotlin 2.x, **Java 21 required** (newer JVMs fail — use `sdk use java 21.0.9-tem`)
+- **Build**: Gradle (`build.gradle.kts`, Shadow plugin for fat JAR)
+- **DB**: SQLite via Exposed ORM + `sqlite-jdbc` — no external DB service
+- **Transport**: stdio only (`StdioServerTransport`) — MCP SDK: `io.modelcontextprotocol:kotlin-sdk`
+- **Releases**: JReleaser (`jreleaser.yml`) on `main` only
+- **CI**: GitHub Actions `.github/workflows/ci.yml`
+
+---
+
+## AI Exclusions
+
+Never auto-scan or modify:
+
+- `build/` — Gradle build output
+- `out/` — IDE output
+- `/tmp/*.db` — SQLite temp files used in tests
+
+---
 
 ## Project Snapshot
 - `marstech-engram` is a Kotlin/JVM MCP server that exposes persistent memory tools over stdio for AI clients (`copilot`, `kiro`, etc.).
@@ -43,3 +69,44 @@
 - MCP SDK: `io.modelcontextprotocol:kotlin-sdk` drives server/tool APIs.
 - Storage stack: Exposed ORM + `sqlite-jdbc`; no external DB service required.
 - Transport is stdio-only right now (`StdioServerTransport`), even though Ktor deps are present for future transport evolution.
+
+---
+
+## Terminal Commands
+
+```bash
+# Build + test + fat JAR
+JAVA_HOME=$HOME/.sdkman/candidates/java/21.0.9-tem rtk ./gradlew build -p /Users/marstechadmin/IdeaProjects/marstech-engram
+
+# Tests only
+JAVA_HOME=$HOME/.sdkman/candidates/java/21.0.9-tem rtk ./gradlew test -p /Users/marstechadmin/IdeaProjects/marstech-engram
+
+# Fat JAR → build/libs/marstech-engram-*.jar
+JAVA_HOME=$HOME/.sdkman/candidates/java/21.0.9-tem rtk ./gradlew shadowJar -p /Users/marstechadmin/IdeaProjects/marstech-engram
+```
+
+---
+
+## Living Documentation
+
+When adding or modifying a feature, update this file:
+
+- Add new tools to the Architecture section and register them in `EngramServer.build()`
+- Update `MemoryStore` interface and `Memories` table mapping if adding filterable fields
+- Document new `ENGRAM_*` environment variables in the config section
+
+---
+
+## Graphify Knowledge Graph
+
+If `graphify-out/` exists at the repo root:
+
+```bash
+MyGraphify /Users/marstechadmin/IdeaProjects/marstech-engram
+/graphify query "find all MCP tool registrations"
+/graphify explain "memory persistence flow"
+```
+
+---
+
+_Last updated: 2026-06-04 — MARSTECH-643 AGENTS.md standard alignment_
