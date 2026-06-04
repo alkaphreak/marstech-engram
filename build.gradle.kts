@@ -52,9 +52,14 @@ tasks.test {
     useJUnitPlatform()
 }
 
+// Rename thin JAR to avoid overwriting the fat JAR (same base name + empty classifier)
+tasks.jar {
+    archiveClassifier.set("thin")
+}
+
 tasks.named<ShadowJar>("shadowJar") {
     archiveBaseName.set("marstech-engram")
-    archiveClassifier.set("")
+    archiveClassifier.set("")          // fat JAR = marstech-engram-{version}.jar
     archiveVersion.set(version.toString())
     mergeServiceFiles()
 }
