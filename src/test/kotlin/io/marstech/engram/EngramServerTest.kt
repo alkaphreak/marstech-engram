@@ -201,4 +201,135 @@ class EngramServerTest {
 
         assertNotNull(store.findByKey("forever"))
     }
+
+    @Test
+    fun `save preserves createdAt on update`() = runTest {
+        val store = newStore().also { it.initialize() }
+        val original = Memory(key = "preserve-ts", value = "v1", createdAt = Instant.parse("2025-01-01T00:00:00Z"))
+        store.save(original)
+        store.save(Memory(key = "preserve-ts", value = "v2"))
+
+        val recalled = store.findByKey("preserve-ts")
+        assertNotNull(recalled)
+        // createdAt must not change on update — it should be the original insert's value
+        assertEquals("2025-01-01T00:00:00Z", recalled.createdAt.toString())
+    }
+
+    // ── TTL edge cases ────────────────────────────────────────────────────────
+
+    @Test
+    fun `search excludes expired memories`() = runTest {
+        val store = newStore().also { it.initialize() }
+        store.save(Memory(key = "expired-search", value = "findme", ttl = Instant.now().minusSeconds(1)))
+        store.save(Memory(key = "alive-search",   value = "findme"))
+
+        val results = store.search("findme")
+        assertEquals(1, results.size)
+        assertEquals("alive-search", results[0].key)
+    }
+
+    @Test
+    fun `list excludes expired memories`() = runTest {
+        val store = newStore().also { it.initialize() }
+        store.save(Memory(key = "exp-list", value = "x", ttl = Instant.now().minusSeconds(1)))
+        store.save(Memory(key = "alive-list", value = "y"))
+
+        val results = store.list()
+        assertEquals(1, results.size)
+        assertEquals("alive-list", results[0].key)
+    }
+
+    @Test
+    fun `findByTags excludes expired memories`() = runTest {
+        val store = newStore().also { it.initialize() }
+        store.save(Memory(key = "exp-tag",   value = "x", tags = listOf("stale"), ttl = Instant.now().minusSeconds(1)))
+        store.save(Memory(key = "alive-tag", value = "y", tags = listOf("stale")))
+
+        val results = store.findByTags(listOf("stale"))
+        assertEquals(1, results.size)
+        assertEquals("alive-tag", results[0].key)
+    }
+
+    @Test
+    fun `purgeExpired returns 0 when nothing is expired`() = runTest {
+        val store = newStore().also { it.initialize() }
+        store.save(Memory(key = "alive-1", value = "x", ttl = Instant.now().plusSeconds(3600)))
+        store.save(Memory(key = "alive-2", value = "y"))
+
+        assertEquals(0, store.purgeExpired())
+    }
+
+    // ── findByTags advanced ───────────────────────────────────────────────────
+
+    @Test
+    fun `findByTags matches any tag in list`() = runTest {
+        val store = newStore().also { it.initialize() }
+        store.save(Memory(key = "tag-a", value = "x", tags = listOf("alpha")))
+        store.save(Memory(key = "tag-b", value = "y", tags = listOf("beta")))
+        store.save(Memory(key = "tag-c", value = "z", tags = listOf("gamma")))
+
+        val results = store.findByTags(listOf("alpha", "beta"))
+        assertEquals(2, results.size)
+        assertTrue(results.any { it.key == "tag-a" })
+        assertTrue(results.any { it.key == "tag-b" })
+    }
+
+    @Test
+    fun `findByTags filters by project`() = runTest {
+        val store = newStore().also { it.initialize() }
+        store.save(Memory(key = "pa-tagged", value = "x", tags = listOf("kotlin"), project = "project-a"))
+        store.save(Memory(key = "pb-tagged", value = "y", tags = listOf("kotlin"), project = "project-b"))
+
+        val results = store.findByTags(listOf("kotlin"), project = "project-a")
+        assertEquals(1, results.size)
+        assertEquals("pa-tagged", results[0].key)
+    }
+
+    @Test
+    fun `findByTags returns empty for unknown tag`() = runTest {
+        val store = newStore().also { it.initialize() }
+        store.save(Memory(key = "some-key", value = "x", tags = listOf("known")))
+
+        assertTrue(store.findByTags(listOf("unknown")).isEmpty())
+    }
+
+    // ── List ordering & combined filters ─────────────────────────────────────
+
+    @Test
+    fun `list filters by project and sourceTool combined`() = runTest {
+        val store = newStore().also { it.initialize() }
+        store.save(Memory(key = "match",      value = "a", project = "p1", sourceTool = "copilot"))
+        store.save(Memory(key = "wrong-tool", value = "b", project = "p1", sourceTool = "kiro"))
+        store.save(Memory(key = "wrong-proj", value = "c", project = "p2", sourceTool = "copilot"))
+
+        val results = store.list(project = "p1", sourceTool = "copilot")
+        assertEquals(1, results.size)
+        assertEquals("match", results[0].key)
+    }
+
+    // ── Empty store ───────────────────────────────────────────────────────────
+
+    @Test
+    fun `list returns empty on empty store`() = runTest {
+        val store = newStore().also { it.initialize() }
+        assertTrue(store.list().isEmpty())
+    }
+
+    @Test
+    fun `search returns empty on empty store`() = runTest {
+        val store = newStore().also { it.initialize() }
+        assertTrue(store.search("anything").isEmpty())
+    }
+
+    @Test
+    fun `findByTags returns empty on empty store`() = runTest {
+        val store = newStore().also { it.initialize() }
+        assertTrue(store.findByTags(listOf("any")).isEmpty())
+    }
+
+    @Test
+    fun `purgeExpired returns 0 on empty store`() = runTest {
+        val store = newStore().also { it.initialize() }
+        assertEquals(0, store.purgeExpired())
+    }
 }

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-06-04
+
+### Added
+- `install.sh` — one-line installer: downloads fat JAR from GitHub Releases, prints ready-to-paste MCP config snippets for Copilot, Kiro, Cursor, and Claude Desktop
+- 13 additional test cases covering edge cases: TTL expiry in `search`/`list`/`findByTags`, multi-tag matching, combined project+sourceTool filters, empty store behaviour, `purgeExpired` zero-return, `createdAt` preservation on update
+
+### Changed
+- MCP clients configured for dogfooding: `~/.copilot/mcp-config.json` and `~/.kiro/settings/mcp.json` now point to local Engram instance
+
+## [0.2.0] - Planned
+
+### Planned
+- PostgreSQL + pgvector backend (`MemoryStore` interface swap)
+- `memory_search` upgrade to vector similarity search (via Ollama or OpenAI embeddings)
+- `install.sh` improvements: Homebrew formula, auto-update support
+- Multi-user / team workspace mode
+
 ## [0.1.0] - 2026-05-13
 
 ### Added
